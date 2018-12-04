@@ -43,6 +43,7 @@ namespace Klet
                 rule();
                 reload();
                 Thread.Sleep(100);
+
             }
         }
 
