@@ -3,7 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
 VisualStudioVersion = 15.0.27130.2020
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Klet", "Klet\Klet.csproj", "{01D3B9D3-ACA6-48DD-90A4-5F5D85912C67}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CellAutomaton", "Klet\CellAutomaton.csproj", "{01D3B9D3-ACA6-48DD-90A4-5F5D85912C67}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

@@ -11,43 +11,45 @@ using System.Windows.Forms;
 
 namespace Klet
 {
-    public partial class Form1 : Form
+    public partial class MainWindow : Form
     {
-        int im1 = 0, ip1 = 0, jm1 = 0, jp1 = 0;
-        bool thread_stop = false;
-        static int square = 50;
-        Graphics gPanel;
-        Thread workAndViewThread;
-        Cell[,] cells = new Cell[square, square];
-        public Form1()
+        static int im1 = 0, ip1 = 0, jm1 = 0, jp1 = 0;
+        static bool thread_stop = false;
+        static int square = 50; //Количество квадратов по ширине/длине
+        static int space = 4; //Множитель размера графического окна   
+        static Cell[,] cells = new Cell[square, square];
+        static Mutex mutexProcess = new Mutex();
+        Graphics gPanel; //графическая панель, куда выводистся изображение
+        Thread workThread;
+
+        public MainWindow()
         {
             InitializeComponent();
+            gPanel = panelCell.CreateGraphics();
+            StartConfiguration();
         }
         
-        public void startWorking()
+        public void StartWorking()
         {
-            gPanel = panelKlet.CreateGraphics();
-            startConfiguration();
-            randomIn();
-            workAndViewThread = new Thread(new ThreadStart(workAndView));
+            StartConfiguration();
+            RandomIn();
+            workThread = new Thread(new ThreadStart(WorkAndView));
             thread_stop = false;
-            workAndViewThread.Start();
+            workThread.Start();
         }
 
-        public void workAndView()
+        public static void WorkAndView()
         {
-
             for(int i = 0; !thread_stop; i++)
             {
-                output();
-                rule();
-                reload();
-                Thread.Sleep(100);
-
+                mutexProcess.WaitOne();
+                Rule();
+                Reload();
+                mutexProcess.ReleaseMutex();
             }
         }
 
-        private void randomIn()
+        private void RandomIn()
         {
             Random rand = new Random();
             
@@ -59,7 +61,7 @@ namespace Klet
             }
 
         }
-        private void startConfiguration()
+        private void StartConfiguration()
         {
             int[] bufRGB = { 210, 100, 35 };
             for (int i = 0; i < square; i++)
@@ -69,20 +71,18 @@ namespace Klet
                     cells[i, k].colorRGB = bufRGB;
                 }
         }
-        private void output()
+        private void Output() //Вывод в окошко
         {
             for (int i = 0; i < square; i++)
                 for (int k = 0; k < square; k++)
                 {
                     int[] bufRGBV = cells[i, k].colorRGB;
-                    
                     gPanel.FillRectangle(new SolidBrush(Color.FromArgb(bufRGBV[0], bufRGBV[1], bufRGBV[2])), 
-                        new Rectangle(i*4, k*4, 4, 4));
+                        new Rectangle(i*space, k* space, space, space));
                 }
-            
         }
 
-        private void rule()
+        private static void Rule()
         {
             for (int i = 0; i < square; i++)
                 for (int j = 0; j < square; j++)
@@ -109,12 +109,7 @@ namespace Klet
 
         }
 
-        private void button3_Click(object sender, EventArgs e)
-        {
-            thread_stop = true;
-        }
-
-        private void reload()
+        private static void Reload()
         {
             for (int i = 0; i < square; i++)
                 for (int j = 0; j < square; j++)
@@ -122,15 +117,34 @@ namespace Klet
                     cells[i, j].nextRGB();
                 }
         }
-        private void button1_Click(object sender, EventArgs e)
+
+        private void TimerProcess_Tick(object sender, EventArgs e)
         {
-            startWorking();
+            mutexProcess.WaitOne();
+            Output();
+            mutexProcess.ReleaseMutex();
         }
-        private void button2_Click(object sender, EventArgs e)
+
+        private void MainWindow_FormClosing(object sender, FormClosingEventArgs e)
         {
-            output();
-            rule();
-            reload();
+            thread_stop = true;
+        }
+
+        private void ButtonStop_Click(object sender, EventArgs e)
+        {
+            thread_stop = true;
+        }
+
+        private void ButtonStart_Click(object sender, EventArgs e)
+        {
+            StartWorking();
+        }
+
+        private void ButtonNext_Click(object sender, EventArgs e)
+        {
+            Output();
+            Rule();
+            Reload();
         }
     }
 }
